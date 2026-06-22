@@ -59,8 +59,8 @@ export default function LearnerProfilePage() {
           response = await learnerService.getProfile();
         }
         
-        const payload = response?.data ?? response;
-        const profileData = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
+        const rawData = response?.data || response;
+        const profileData = rawData?.data || rawData || {};
 
         setProfile((prev) => ({
           ...prev,
@@ -70,8 +70,8 @@ export default function LearnerProfilePage() {
           phone: (profileData.phone as string) ?? '',
           avatar: (profileData.avatar as string) ?? '',
         }));
-      } catch {
-        console.error('Gagal memuat data profil');
+      } catch (err) {
+        console.error('Gagal memuat data profil:', err);
       } finally {
         setLoading(false);
       }

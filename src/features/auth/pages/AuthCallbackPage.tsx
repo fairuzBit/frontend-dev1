@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -7,8 +7,12 @@ export default function AuthCallbackPage() {
   const navigate = useNavigate();
   const { loginWithSupabaseToken } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
     const handleCallback = async () => {
       try {
         // Dapatkan session Supabase yang baru saja terautentikasi

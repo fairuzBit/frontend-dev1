@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import apiClient from '@/api/axios';
 import { publicService } from '@/api/services/publicService';
 
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = Boolean(token && user);
 
-  const fetchCurrentUser = async (authToken?: string | null) => {
+  const fetchCurrentUser = useCallback(async (authToken?: string | null) => {
     const activeToken = authToken ?? token;
 
     if (!activeToken) {
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return null;
-  };
+  }, [token]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     bootstrap();
   }, []);
 
-  const login = async (payload: Record<string, unknown>): Promise<User | null> => {
+  const login = useCallback(async (payload: Record<string, unknown>): Promise<User | null> => {
     const response = await publicService.login(payload);
     const payloadData = response?.data ?? response;
     const authToken = extractToken(payloadData);
@@ -150,9 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return await fetchCurrentUser(authToken);
-  };
+  }, [fetchCurrentUser]);
 
-  const loginWithSupabaseToken = async (supabaseAccessToken: string): Promise<User | null> => {
+  const loginWithSupabaseToken = useCallback(async (supabaseAccessToken: string): Promise<User | null> => {
     const response = await publicService.loginWithSupabase(supabaseAccessToken);
     const payloadData = response?.data ?? response;
     const authToken = extractToken(payloadData);
@@ -169,9 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return await fetchCurrentUser(authToken);
-  };
+  }, [fetchCurrentUser]);
 
-  const register = async (payload: Record<string, unknown>): Promise<User | null> => {
+  const register = useCallback(async (payload: Record<string, unknown>): Promise<User | null> => {
     const response = await publicService.register(payload);
     const payloadData = response?.data ?? response;
     const authToken = extractToken(payloadData);
@@ -188,9 +188,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return await fetchCurrentUser(authToken);
-  };
+  }, [fetchCurrentUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await apiClient.post('/logout');
     } catch {
@@ -200,14 +200,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
       setUser(null);
     }
-  };
+  }, []);
 
-  const refreshUser = async (): Promise<User | null> => {
+  const refreshUser = useCallback(async (): Promise<User | null> => {
     if (token) {
       return await fetchCurrentUser(token);
     }
     return null;
-  };
+  }, [token, fetchCurrentUser]);
 
   const value = useMemo(
     () => ({
