@@ -21,8 +21,8 @@ export default function LearnerBookingDetailPage() {
   const [error, setError] = useState<string | null>(null);
   
   // Payment State
-  const [selectedMethod, setSelectedMethod] = useState<string>('transfer');
-  const [selectedProvider, setSelectedProvider] = useState<string>('bri');
+  const [selectedMethod, setSelectedMethod] = useState<string>('doku');
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -53,37 +53,14 @@ export default function LearnerBookingDetailPage() {
       setIsProcessing(true);
       setPaymentError(null);
       
-      const paymentMethodStr = selectedMethod === 'cash' ? 'cash' : 'midtrans';
+      const paymentMethodStr = selectedMethod === 'cash' ? 'cash' : 'doku';
 
       const res = await learnerService.payBooking(booking.id, paymentMethodStr);
       const updatedBooking = res.data || res;
       
-      if (updatedBooking.payment_method === 'midtrans') {
-        const snapToken = updatedBooking.payment_code;
-        const snap = (window as any).snap;
-        
-        if (snap) {
-          snap.pay(snapToken, {
-            onSuccess: async (result: any) => {
-              console.log('Payment Success:', result);
-              await fetchBookingDetail();
-            },
-            onPending: async (result: any) => {
-              console.log('Payment Pending:', result);
-              await fetchBookingDetail();
-            },
-            onError: (result: any) => {
-              console.error('Payment Error:', result);
-              setPaymentError('Pembayaran gagal atau dibatalkan.');
-            },
-            onClose: () => {
-              console.log('Payment popup closed');
-              fetchBookingDetail();
-            }
-          });
-        } else {
-          setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
-        }
+      if (updatedBooking.payment_method === 'doku' && updatedBooking.payment_code) {
+        // Redirect to DOKU Hosted Checkout Page
+        window.location.href = updatedBooking.payment_code;
       } else {
         // Cash payment, just reload
         await fetchBookingDetail();
@@ -136,8 +113,8 @@ export default function LearnerBookingDetailPage() {
   const tutorName = booking.tutor?.user?.name || booking.tutor?.name || 'Tutor KonekDin';
   const isPaid = booking.payment_status === 'paid';
   const isCancelled = booking.status === 'cancelled';
-  const isMidtransPending = !isCancelled && booking.payment_method === 'midtrans' && (booking.payment_status === 'unpaid' || booking.payment_status === 'pending');
-  const isPending = !isCancelled && booking.payment_method !== 'midtrans' && (booking.payment_status === 'pending' || (booking.payment_status === 'unpaid' && booking.payment_method !== null));
+  const isDokuPending = !isCancelled && booking.payment_method === 'doku' && (booking.payment_status === 'unpaid' || booking.payment_status === 'pending');
+  const isPending = !isCancelled && booking.payment_method !== 'doku' && (booking.payment_status === 'pending' || (booking.payment_status === 'unpaid' && booking.payment_method !== null));
   
   // Format Date
   const dateObj = new Date(booking.booking_date);
@@ -231,6 +208,23 @@ export default function LearnerBookingDetailPage() {
               </h3>
               
               <div className="space-y-3">
+                {/* DOKU Payment Gateway */}
+                <label className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${
+                  selectedMethod === 'doku' ? 'border-emerald-500 bg-emerald-50/30 ring-1 ring-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'
+                }`}>
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mr-4">
+                    <CreditCard className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-sm text-slate-800">Pembayaran Online (DOKU)</h4>
+                    <p className="text-xs text-slate-500">Virtual Account, QRIS, Kartu Kredit, E-Wallet</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'doku' ? 'border-emerald-500' : 'border-slate-300'}`}>
+                    {selectedMethod === 'doku' && <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />}
+                  </div>
+                  <input type="radio" name="method" value="doku" className="hidden" onChange={() => setSelectedMethod('doku')} />
+                </label>
+
                 {/* Tunai */}
                 <label className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${
                   selectedMethod === 'cash' ? 'border-emerald-500 bg-emerald-50/30 ring-1 ring-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'
@@ -247,109 +241,43 @@ export default function LearnerBookingDetailPage() {
                   </div>
                   <input type="radio" name="method" value="cash" className="hidden" onChange={() => setSelectedMethod('cash')} />
                 </label>
-
-                {/* Transfer Bank */}
-                <div className={`border rounded-2xl transition-all overflow-hidden ${
-                  selectedMethod === 'transfer' ? 'border-emerald-500 bg-emerald-50/30 ring-1 ring-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'
-                }`}>
-                  <label className="flex items-center p-4 cursor-pointer">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mr-4">
-                      <CreditCard className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-sm text-slate-800">Transfer Bank</h4>
-                      <p className="text-xs text-slate-500">BRI, BNI, Mandiri, BCA</p>
-                    </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'transfer' ? 'border-emerald-500' : 'border-slate-300'}`}>
-                      {selectedMethod === 'transfer' && <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />}
-                    </div>
-                    <input type="radio" name="method" value="transfer" className="hidden" onChange={() => setSelectedMethod('transfer')} />
-                  </label>
-                  
-                  {selectedMethod === 'transfer' && (
-                    <div className="px-4 pb-4 pt-0 pl-[72px]">
-                      <div className="flex gap-2">
-                        {['bri', 'bni', 'mandiri', 'bca'].map(bank => (
-                          <button
-                            key={bank}
-                            onClick={() => setSelectedProvider(bank)}
-                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
-                              selectedProvider === bank 
-                                ? 'btn-glass-primary' 
-                                : 'btn-glass'
-                            }`}
-                          >
-                            {bank}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* E-Wallet */}
-                <div className={`border rounded-2xl transition-all overflow-hidden ${
-                  selectedMethod === 'ewallet' ? 'border-emerald-500 bg-emerald-50/30 ring-1 ring-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'
-                }`}>
-                  <label className="flex items-center p-4 cursor-pointer">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mr-4">
-                      <Smartphone className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-sm text-slate-800">E-Wallet</h4>
-                      <p className="text-xs text-slate-500">OVO, GoPay, Dana</p>
-                    </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === 'ewallet' ? 'border-emerald-500' : 'border-slate-300'}`}>
-                      {selectedMethod === 'ewallet' && <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />}
-                    </div>
-                    <input type="radio" name="method" value="ewallet" className="hidden" onChange={() => setSelectedMethod('ewallet')} />
-                  </label>
-
-                  {selectedMethod === 'ewallet' && (
-                    <div className="px-4 pb-4 pt-0 pl-[72px]">
-                      <div className="flex gap-2">
-                        {['ovo', 'gopay', 'dana'].map(wallet => (
-                          <button
-                            key={wallet}
-                            onClick={() => setSelectedProvider(wallet)}
-                            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
-                              selectedProvider === wallet 
-                                ? 'btn-glass-primary' 
-                                : 'btn-glass'
-                            }`}
-                          >
-                            {wallet}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
-          ) : isMidtransPending ? (
+          ) : isDokuPending ? (
             <div className="p-8 border border-emerald-200 bg-emerald-50/50 rounded-2xl flex flex-col items-center justify-center text-center mt-6">
               <CreditCard className="w-16 h-16 text-emerald-500 mb-4" />
               <h3 className="text-xl font-bold text-slate-800 mb-2">Selesaikan Pembayaran</h3>
-              <p className="text-slate-600 text-sm mb-6">Pembayaran Anda sedang menunggu penyelesaian via Midtrans.</p>
+              <p className="text-slate-600 text-sm mb-6">Pembayaran Anda sedang menunggu penyelesaian via DOKU.</p>
               <button
                 onClick={() => {
-                  const snap = (window as any).snap;
-                  if (snap) {
-                    snap.pay(booking.payment_code, {
-                      onSuccess: () => fetchBookingDetail(),
-                      onPending: () => fetchBookingDetail(),
-                      onError: () => setPaymentError('Pembayaran gagal atau dibatalkan.'),
-                      onClose: () => fetchBookingDetail(),
-                    });
+                  if (booking.payment_code) {
+                    window.location.href = booking.payment_code;
                   } else {
-                    setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
+                    setPaymentError('Link pembayaran DOKU tidak ditemukan.');
                   }
                 }}
                 className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
               >
-                Bayar Sekarang (Midtrans)
+                Bayar Sekarang (DOKU)
               </button>
+              {import.meta.env.DEV && (
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsProcessing(true);
+                      await learnerService.simulatePayment(booking.id);
+                      await fetchBookingDetail();
+                    } catch (err: any) {
+                      setPaymentError(err.response?.data?.message || 'Gagal mensimulasikan pembayaran.');
+                    } finally {
+                      setIsProcessing(false);
+                    }
+                  }}
+                  className="mt-4 text-xs text-emerald-600 hover:text-emerald-700 font-bold underline transition-all"
+                >
+                  Simulasikan Pembayaran Sukses (Sandbox)
+                </button>
+              )}
             </div>
           ) : isPending ? (
             <div className="p-8 border border-amber-200 bg-amber-50 rounded-2xl flex flex-col items-center justify-center text-center mt-6">
@@ -439,23 +367,17 @@ export default function LearnerBookingDetailPage() {
             ) : !isPaid && !isPending ? (
               <>
                 <button
-                  onClick={isMidtransPending ? () => {
-                    const snap = (window as any).snap;
-                    if (snap) {
-                      snap.pay(booking.payment_code, {
-                        onSuccess: () => fetchBookingDetail(),
-                        onPending: () => fetchBookingDetail(),
-                        onError: () => setPaymentError('Pembayaran gagal atau dibatalkan.'),
-                        onClose: () => fetchBookingDetail(),
-                      });
+                  onClick={isDokuPending ? () => {
+                    if (booking.payment_code) {
+                      window.location.href = booking.payment_code;
                     } else {
-                      setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
+                      setPaymentError('Link pembayaran DOKU tidak ditemukan.');
                     }
                   } : handleConfirm}
                   disabled={isProcessing}
                   className="w-full py-4 font-bold rounded-xl flex items-center justify-center gap-2 mb-3 disabled:opacity-50 bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-md"
                 >
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : isMidtransPending ? 'Bayar Sekarang' : 'Selesaikan Pembayaran'}
+                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : isDokuPending ? 'Bayar Sekarang' : 'Selesaikan Pembayaran'}
                 </button>
                 <button
                   type="button"
