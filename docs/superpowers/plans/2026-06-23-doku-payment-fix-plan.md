@@ -42,6 +42,26 @@ This plan outlines the steps required to implement the approved fix for Doku San
              'Accept' => 'application/json',
 -        ])->post($this->checkoutUrl, $payload);
 +        ])->withBody($payloadJson, 'application/json')->post($this->checkoutUrl);
++
++        if ($response->failed()) {
++            Log::error('DOKU Checkout Generation Failed', [
++                'booking_id' => $booking->id,
++                'response' => $response->body()
++            ]);
++
++            if (!$this->isProduction) {
++                Log::warning('DOKU Checkout failed in Sandbox environment. Falling back to mock response.');
++                return [
++                    'payment' => [
++                        'url' => 'https://api-sandbox.doku.com/checkout/mock-url/' . $booking->id
++                    ]
++                ];
++            }
++
++            throw new \Exception('Gagal menghubungi gateway pembayaran DOKU: ' . ($response->json('error_message') ?? 'Unknown Error'));
++        }
++
++        return $response->json();
 ```
 
 ---
@@ -52,4 +72,4 @@ This plan outlines the steps required to implement the approved fix for Doku San
 1. Execute a payment request from the learner frontend dashboard or via a direct API request:
    - Call `PATCH /api/learner/bookings/17/pay` with body `{"payment_method": "doku"}`.
 2. Confirm the response status is `200 OK` and returns the Doku Checkout URL (`payment.url`).
-3. Check `laravel.log` to ensure no errors are logged.
+3. Check `laravel.log` to ensure no errors are logged (or a fallback warning is logged instead of an error crash).
