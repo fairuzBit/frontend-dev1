@@ -16,6 +16,12 @@ class PublicService {
     });
   }
 
+  async loginWithSupabase(accessToken: string) {
+    const response = await apiClient.post('/auth/supabase-login', { access_token: accessToken });
+    return response.data;
+  }
+
+
   async getCourses() {
     return withRequestCache('public.courses', async () => {
       const response = await apiClient.get('/courses');

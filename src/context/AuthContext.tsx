@@ -21,6 +21,7 @@ type AuthContextType = {
   register: (payload: Record<string, unknown>) => Promise<User | null>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<User | null>;
+  loginWithSupabaseToken: (supabaseAccessToken: string) => Promise<User | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -151,6 +152,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return await fetchCurrentUser(authToken);
   };
 
+  const loginWithSupabaseToken = async (supabaseAccessToken: string): Promise<User | null> => {
+    const response = await publicService.loginWithSupabase(supabaseAccessToken);
+    const payloadData = response?.data ?? response;
+    const authToken = extractToken(payloadData);
+    const currentUser = extractUser(payloadData) ?? null;
+
+    if (authToken) {
+      localStorage.setItem('konekdin_token', authToken);
+      setToken(authToken);
+    }
+
+    if (currentUser) {
+      setUser(currentUser);
+      return currentUser;
+    }
+
+    return await fetchCurrentUser(authToken);
+  };
+
   const register = async (payload: Record<string, unknown>): Promise<User | null> => {
     const response = await publicService.register(payload);
     const payloadData = response?.data ?? response;
@@ -199,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       refreshUser,
+      loginWithSupabaseToken,
     }),
     [user, token, loading],
   );

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import RegisterPage from '@/features/auth/pages/RegisterPage';
+import AuthCallbackPage from '@/features/auth/pages/AuthCallbackPage';
 import AdminDashboard from '@/features/admin/pages/AdminDashboard';
 import AdminApplicationsPage from '@/features/admin/pages/AdminApplicationsPage';
 import AdminComplaintsPage from '@/features/admin/pages/AdminComplaintsPage';
@@ -62,6 +63,7 @@ function App() {
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/register/tutor" element={<ProtectedRoute allowedRoles={['learner']}><LearnerLayout><TutorApplicationPage /></LearnerLayout></ProtectedRoute>} />
 
       <Route path="/learner" element={<ProtectedRoute allowedRoles={['learner']}><LearnerLayout><LearnerDashboard /></LearnerLayout></ProtectedRoute>} />
