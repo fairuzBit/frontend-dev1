@@ -53,15 +53,39 @@ export default function LearnerBookingDetailPage() {
       setIsProcessing(true);
       setPaymentError(null);
       
-      let paymentMethodStr = selectedMethod;
-      if (selectedMethod === 'transfer' || selectedMethod === 'ewallet') {
-        paymentMethodStr = `${selectedMethod}_${selectedProvider}`;
-      }
+      const paymentMethodStr = selectedMethod === 'cash' ? 'cash' : 'midtrans';
 
       const res = await learnerService.payBooking(booking.id, paymentMethodStr);
+      const updatedBooking = res.data || res;
       
-      if (res.success) {
-        // Fetch fresh data after successful payment
+      if (updatedBooking.payment_method === 'midtrans') {
+        const snapToken = updatedBooking.payment_code;
+        const snap = (window as any).snap;
+        
+        if (snap) {
+          snap.pay(snapToken, {
+            onSuccess: async (result: any) => {
+              console.log('Payment Success:', result);
+              await fetchBookingDetail();
+            },
+            onPending: async (result: any) => {
+              console.log('Payment Pending:', result);
+              await fetchBookingDetail();
+            },
+            onError: (result: any) => {
+              console.error('Payment Error:', result);
+              setPaymentError('Pembayaran gagal atau dibatalkan.');
+            },
+            onClose: () => {
+              console.log('Payment popup closed');
+              fetchBookingDetail();
+            }
+          });
+        } else {
+          setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
+        }
+      } else {
+        // Cash payment, just reload
         await fetchBookingDetail();
       }
     } catch (err: any) {
@@ -112,7 +136,8 @@ export default function LearnerBookingDetailPage() {
   const tutorName = booking.tutor?.user?.name || booking.tutor?.name || 'Tutor KonekDin';
   const isPaid = booking.payment_status === 'paid';
   const isCancelled = booking.status === 'cancelled';
-  const isPending = !isCancelled && (booking.payment_status === 'pending' || (booking.payment_status === 'unpaid' && booking.payment_method !== null));
+  const isMidtransPending = !isCancelled && booking.payment_method === 'midtrans' && (booking.payment_status === 'unpaid' || booking.payment_status === 'pending');
+  const isPending = !isCancelled && booking.payment_method !== 'midtrans' && (booking.payment_status === 'pending' || (booking.payment_status === 'unpaid' && booking.payment_method !== null));
   
   // Format Date
   const dateObj = new Date(booking.booking_date);
@@ -302,6 +327,30 @@ export default function LearnerBookingDetailPage() {
                 </div>
               </div>
             </div>
+          ) : isMidtransPending ? (
+            <div className="p-8 border border-emerald-200 bg-emerald-50/50 rounded-2xl flex flex-col items-center justify-center text-center mt-6">
+              <CreditCard className="w-16 h-16 text-emerald-500 mb-4" />
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Selesaikan Pembayaran</h3>
+              <p className="text-slate-600 text-sm mb-6">Pembayaran Anda sedang menunggu penyelesaian via Midtrans.</p>
+              <button
+                onClick={() => {
+                  const snap = (window as any).snap;
+                  if (snap) {
+                    snap.pay(booking.payment_code, {
+                      onSuccess: () => fetchBookingDetail(),
+                      onPending: () => fetchBookingDetail(),
+                      onError: () => setPaymentError('Pembayaran gagal atau dibatalkan.'),
+                      onClose: () => fetchBookingDetail(),
+                    });
+                  } else {
+                    setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
+                  }
+                }}
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                Bayar Sekarang (Midtrans)
+              </button>
+            </div>
           ) : isPending ? (
             <div className="p-8 border border-amber-200 bg-amber-50 rounded-2xl flex flex-col items-center justify-center text-center mt-6">
               <Clock className="w-16 h-16 text-amber-500 mb-4" />
@@ -390,11 +439,23 @@ export default function LearnerBookingDetailPage() {
             ) : !isPaid && !isPending ? (
               <>
                 <button
-                  onClick={handleConfirm}
+                  onClick={isMidtransPending ? () => {
+                    const snap = (window as any).snap;
+                    if (snap) {
+                      snap.pay(booking.payment_code, {
+                        onSuccess: () => fetchBookingDetail(),
+                        onPending: () => fetchBookingDetail(),
+                        onError: () => setPaymentError('Pembayaran gagal atau dibatalkan.'),
+                        onClose: () => fetchBookingDetail(),
+                      });
+                    } else {
+                      setPaymentError('Midtrans SDK tidak termuat. Silakan muat ulang halaman.');
+                    }
+                  } : handleConfirm}
                   disabled={isProcessing}
                   className="w-full py-4 font-bold rounded-xl flex items-center justify-center gap-2 mb-3 disabled:opacity-50 bg-emerald-500 hover:bg-emerald-600 text-white transition-all shadow-md"
                 >
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Selesaikan Pembayaran'}
+                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : isMidtransPending ? 'Bayar Sekarang' : 'Selesaikan Pembayaran'}
                 </button>
                 <button
                   type="button"
