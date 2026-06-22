@@ -54,10 +54,17 @@ if ($response->failed()) {
     ]);
 
     if (!$this->isProduction) {
-        Log::warning('DOKU Checkout failed in Sandbox environment. Falling back to mock response.');
+        Log::warning('DOKU Checkout failed in Sandbox environment. Simulating payment auto-approval.');
+        try {
+            $paymentService = app(\App\Services\Admin\PaymentService::class);
+            $paymentService->approvePayment($booking->id);
+        } catch (\Exception $e) {
+            Log::error('Mock payment approval failed: ' . $e->getMessage());
+        }
+
         return [
             'payment' => [
-                'url' => 'https://api-sandbox.doku.com/checkout/mock-url/' . $booking->id
+                'url' => $callbackUrl
             ]
         ];
     }
