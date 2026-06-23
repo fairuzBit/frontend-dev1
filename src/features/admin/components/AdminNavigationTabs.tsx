@@ -43,12 +43,6 @@ export default function AdminNavigationTabs() {
       count: counts.pendingVerifications,
     },
     {
-      to: '/admin/payments',
-      label: 'Manajemen Keuangan',
-      icon: Wallet,
-      count: counts.pendingPayments,
-    },
-    {
       to: '/admin/activities',
       label: 'Riwayat Aktivitas',
       icon: Activity,
