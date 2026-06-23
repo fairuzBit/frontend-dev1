@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: 243 248 245; /* Soft pastel green-gray background base */
+    --bg-secondary: 255 255 255; /* white */
+    --text-primary: 17 24 39; /* gray-900 */
+    --text-secondary: 107 114 128; /* gray-500 */
+    --border-color: 229 231 235; /* gray-200 */
+    
+    /* Brand (Deep Emerald Green in Light Mode) */
+    --brand-50: 236 253 245;
+    --brand-100: 209 250 229;
+    --brand-400: 52 211 153;
+    --brand-500: 36 88 70; /* #245846 Deep green */
+    --brand-600: 26 69 54;
+    --brand-700: 20 54 42;
+    --brand-800: 15 41 32;
+    --brand-900: 10 27 21;
+    
+    /* Accents */
+    --accent-pink: 244 114 182; /* Soft rose/pink */
+    --accent-yellow: 250 204 21;
+    --accent-green: 34 197 94; /* Soft emerald green */
+    
+    /* Gradients */
+    --grad-start: 34 197 94; /* Soft emerald green */
+    --grad-end: 244 114 182; /* Soft rose/pink */
+    
+    /* Global App BG */
+    --app-bg: 243 248 245; /* Soft pastel green-gray background */
+    
+    /* Sidebar (Light Mode) */
+    --sidebar-bg: 255 255 255; /* Matches frosted glass */
+    --sidebar-text: 17 24 39;
+    --sidebar-border: 229 231 235;
+    --sidebar-hover: 243 248 245;
+  }
+
+  .dark {
+    /* Background ultra gelap bernuansa hijau charcoal */
+    --bg-primary: 6 11 8;       /* #060b08 */
+    --bg-secondary: 12 22 17;   /* #0c1611 */
+    --text-primary: 255 255 255;
+    --text-secondary: 156 163 175; 
+    --border-color: 138 227 52; /* Lime/neon green */
+    
+    /* Brand (Vibrant Lime Green / Neon Green) */
+    --brand-50: 244 252 235;
+    --brand-100: 228 249 204;
+    --brand-400: 172 239 88;
+    --brand-500: 138 227 52;   /* #8ae334 */
+    --brand-600: 110 189 36;
+    --brand-700: 84 147 25;
+    --brand-800: 59 104 16;
+    --brand-900: 42 75 10;
+
+    /* Accents */
+    --accent-pink: 236 102 153;
+    --accent-yellow: 250 204 21;
+    --accent-green: 138 227 52;  /* Neon Green */
+    
+    /* Gradients */
+    --grad-start: 138 227 52;
+    --grad-end: 6 11 8;
+    
+    /* Global App BG */
+    --app-bg: 6 11 8; 
+    
+    /* Sidebar (Dark Mode) */
+    --sidebar-bg: 6 11 8;
+    --sidebar-text: 248 250 252;
+    --sidebar-border: 138 227 52 / 0.08;
+    --sidebar-hover: 138 227 52 / 0.1;
+  }
+
+  /* Auto-convert cards with bg-bgSecondary to glassmorphic cards in light mode (default) */
+  .bg-bgSecondary {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.75) 100%) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04),
+                inset 0 0 12px rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* Default translucent borders in light mode */
+  .border, 
+  .border-borderColor {
+    border-color: rgba(229, 231, 235, 0.5) !important;
+  }
+
+  /* Auto-convert cards with bg-bgSecondary to glassmorphic gradient cards in dark mode */
+  .dark .bg-bgSecondary {
+    background: linear-gradient(135deg, rgba(16, 28, 22, 0.45) 0%, rgba(6, 11, 8, 0.75) 100%) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(138, 227, 52, 0.08) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37),
+                inset 0 0 12px rgba(138, 227, 52, 0.05) !important;
+  }
+
+  /* Make borders translucent neon-green in dark mode */
+  .dark .border, 
+  .dark .border-borderColor {
+    border-color: rgba(138, 227, 52, 0.08) !important;
+  }
+
+  /* Customize scrollbar under dark mode */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(138, 227, 52, 0.2) !important;
+  }
+
+  /* === GLASS GRADIENT BUTTONS === */
+
+  /* Base glass button - frosted glass matching the bg-bgSecondary card style */
+  .btn-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.50) 0%, rgba(255, 255, 255, 0.80) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: rgb(var(--text-primary)) !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-glass:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.92) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+    box-shadow: 0 4px 16px rgba(31, 38, 135, 0.06) !important;
+  }
+  .btn-glass:disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+  }
+
+  .dark .btn-glass {
+    background: linear-gradient(135deg, rgba(138, 227, 52, 0.05) 0%, rgba(138, 227, 52, 0.02) 100%) !important;
+    border: 1px solid rgba(138, 227, 52, 0.12) !important;
+    color: rgb(var(--text-secondary)) !important;
+  }
+  .dark .btn-glass:hover {
+    background: linear-gradient(135deg, rgba(138, 227, 52, 0.10) 0%, rgba(138, 227, 52, 0.04) 100%) !important;
+    border-color: rgba(138, 227, 52, 0.22) !important;
+    color: rgb(var(--text-primary)) !important;
+    box-shadow: 0 4px 16px rgba(138, 227, 52, 0.06) !important;
+  }
+
+  /* Primary glass button - brand gradient tint */
+  .btn-glass-primary {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(116, 244, 114, 0.1) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(34, 197, 94, 0.25) !important;
+    color: rgb(var(--brand-600)) !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-glass-primary:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(244, 114, 182, 0.18) 100%) !important;
+    border-color: rgba(34, 197, 94, 0.40) !important;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.10) !important;
+  }
+  .btn-glass-primary:disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+  }
+
+  .dark .btn-glass-primary {
+    background: linear-gradient(135deg, rgba(138, 227, 52, 0.28) 0%, rgba(138, 227, 52, 0.10) 100%) !important;
+    border: 1px solid rgba(138, 227, 52, 0.38) !important;
+    color: #8ae334 !important;
+  }
+  .dark .btn-glass-primary:hover {
+    background: linear-gradient(135deg, rgba(138, 227, 52, 0.38) 0%, rgba(138, 227, 52, 0.16) 100%) !important;
+    border-color: rgba(138, 227, 52, 0.50) !important;
+    box-shadow: 0 4px 20px rgba(138, 227, 52, 0.15) !important;
+  }
+
+  /* Destructive glass button - red tint */
+  .btn-glass-destructive {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(239, 68, 68, 0.20) !important;
+    color: rgb(220 38 38) !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-glass-destructive:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.08) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.10) !important;
+  }
+  .btn-glass-destructive:disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+  }
+
+  .dark .btn-glass-destructive {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10) 0%, rgba(6, 11, 8, 0.25) 100%) !important;
+    border: 1px solid rgba(239, 68, 68, 0.15) !important;
+    color: rgb(252 165 165) !important;
+  }
+  .dark .btn-glass-destructive:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.20) 0%, rgba(6, 11, 8, 0.35) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+  }
+
+  /* Warning/Yellow glass button - amber/yellow tint for reviews */
+  .btn-glass-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.08) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(245, 158, 11, 0.28) !important;
+    color: #b45309 !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-glass-warning:hover {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(251, 191, 36, 0.14) 100%) !important;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.12) !important;
+  }
+  .btn-glass-warning:disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+  }
+
+  .dark .btn-glass-warning {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.05) 100%) !important;
+    border: 1px solid rgba(251, 191, 36, 0.28) !important;
+    color: #fbbf24 !important;
+  }
+  .dark .btn-glass-warning:hover {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.28) 0%, rgba(251, 191, 36, 0.10) 100%) !important;
+    border-color: rgba(251, 191, 36, 0.45) !important;
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15) !important;
+  }
+
+  /* WhatsApp green glass button */
+  .btn-glass-whatsapp {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.12) 0%, rgba(37, 211, 102, 0.06) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(37, 211, 102, 0.3) !important;
+    color: #166534 !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-glass-whatsapp:hover {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.22) 0%, rgba(37, 211, 102, 0.1) 100%) !important;
+    border-color: rgba(37, 211, 102, 0.45) !important;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.12) !important;
+  }
+  .btn-glass-whatsapp:disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+  }
+
+  .dark .btn-glass-whatsapp {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.2) 0%, rgba(37, 211, 102, 0.06) 100%) !important;
+    border: 1px solid rgba(37, 211, 102, 0.35) !important;
+    color: #4ade80 !important;
+  }
+  .dark .btn-glass-whatsapp:hover {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.3) 0%, rgba(37, 211, 102, 0.12) 100%) !important;
+    border-color: rgba(37, 211, 102, 0.5) !important;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.15) !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: rgb(var(--bg-primary));
+  color: rgb(var(--text-primary));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
